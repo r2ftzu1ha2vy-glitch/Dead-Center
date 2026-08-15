@@ -167,9 +167,10 @@ const Game = (function () {
     LevelSelect.refresh();
   }
 
-  function finish(completed) {
+function finish(completed) {
     running = false;
     audio.onended = null;
+    audio.pause();
     if (rafId) cancelAnimationFrame(rafId);
 
     const accuracy = totalNotes > 0 ? (hits / totalNotes) * 100 : 0;
@@ -333,10 +334,11 @@ const Game = (function () {
     comboEl.textContent = combo > 1 ? `${combo}x COMBO` : "";
   }
 
-  let loseFlashUntil = 0;
+let loseFlashUntil = 0;
   function triggerLoseFlash() {
+    audio.pause();
     loseFlashUntil = performance.now() + 500;
-    running = true; // allow a few more render frames for the flash
+    running = true;
     const flashLoop = () => {
       render(audio.currentTime);
       if (performance.now() < loseFlashUntil) {
