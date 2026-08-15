@@ -21,13 +21,24 @@ const ScreenManager = (function () {
     });
     current = name;
 
-    if (name === "menu" || name === "select") {
+    if (name === "menu") {
+      menuAudio.volume = 0.5;
       menuAudio.play().catch(() => {
         // autoplay blocked until a user gesture happens — the unlock
         // listener below will start it as soon as the person interacts.
       });
+    } else if (name === "select") {
+      // Level select plays a preview of the selected song instead of the
+      // menu theme, so keep the menu track running (for a seamless loop)
+      // but silent.
+      menuAudio.volume = 0;
+      menuAudio.play().catch(() => {});
     } else {
       menuAudio.pause();
+    }
+
+    if (name !== "select") {
+      LevelSelect.stopPreview();
     }
 
     if (name === "select") {
