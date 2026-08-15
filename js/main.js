@@ -9,6 +9,9 @@ const ScreenManager = (function () {
     game: document.getElementById("screen-game"),
   };
 
+  const menuAudio = document.getElementById("menu-audio-player");
+  menuAudio.volume = 0.5;
+
   let current = "menu";
 
   function show(name) {
@@ -17,6 +20,14 @@ const ScreenManager = (function () {
       el.classList.toggle("active", key === name);
     });
     current = name;
+
+    if (name === "menu") {
+      menuAudio.play().catch(() => {
+        // autoplay may be blocked until first user interaction; will retry on next show()
+      });
+    } else {
+      menuAudio.pause();
+    }
 
     if (name === "select") {
       LevelSelect.refresh();
