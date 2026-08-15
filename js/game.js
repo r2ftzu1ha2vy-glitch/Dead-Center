@@ -62,6 +62,10 @@ const Game = (function () {
   let saveFlashUntil = 0;
   let saveFlashSide = 0;
 
+  let activeCues = [];
+  let cueEl = null;
+  let cueHideTimeout = null;
+
   // ---- Public API ----
   async function start(selectedSong) {
     song = selectedSong;
@@ -82,6 +86,12 @@ const Game = (function () {
       showLoadingState(false);
     }
     chart = song.chart;
+
+    cueEl = document.getElementById("tutorial-cue");
+    activeCues = (song.isTutorial && song.textCues)
+      ? song.textCues.map(c => ({ ...c, shown: false }))
+      : [];
+    if (cueEl) { cueEl.textContent = ""; cueEl.classList.remove("visible"); }
 
     resetState();
     audio.src = song.url;
@@ -163,6 +173,8 @@ const Game = (function () {
     audio.pause();
     audio.onended = null;
     if (rafId) cancelAnimationFrame(rafId);
+    if (cueEl) cueEl.classList.remove("visible");
+    clearTimeout(cueHideTimeout);
     ScreenManager.show("select");
     LevelSelect.refresh();
   }
@@ -172,6 +184,8 @@ function finish(completed) {
     audio.onended = null;
     audio.pause();
     if (rafId) cancelAnimationFrame(rafId);
+    if (cueEl) cueEl.classList.remove("visible");
+    clearTimeout(cueHideTimeout);
 
     const accuracy = totalNotes > 0 ? (hits / totalNotes) * 100 : 0;
 
@@ -271,6 +285,23 @@ function finish(completed) {
         resolveNote(note, t);
       }
     }
+
+    for (const cue of activeCues) {
+      if (!cue.shown && t >= cue.time) {
+        cue.shown = true;
+        showTutorialCue(cue.text);
+      }
+    }
+  }
+
+  function showTutorialCue(text) {
+    if (!cueEl) return;
+    cueEl.textContent = text;
+    cueEl.classList.add("visible");
+    clearTimeout(cueHideTimeout);
+    cueHideTimeout = setTimeout(() => {
+      cueEl.classList.remove("visible");
+    }, 3000);
   }
 
   function shortestAngleDiff(a, b) {
