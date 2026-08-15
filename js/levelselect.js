@@ -4,14 +4,61 @@
 
 const LevelSelect = (function () {
   let selectedSong = null;
+  let previewAudio = null;
+  const PREVIEW_START = 0;
+  const PREVIEW_FADE_MS = 250;
+  let fadeInterval = null;
+
+  function getPreviewAudio() {
+    if (!previewAudio) {
+      previewAudio = new Audio();
+      previewAudio.loop = true;
+    }
+    return previewAudio;
+  }
+
+  function stopPreview() {
+    if (!previewAudio) return;
+    clearInterval(fadeInterval);
+    const audio = previewAudio;
+    const startVol = audio.volume;
+    const steps = 10;
+    let i = 0;
+    fadeInterval = setInterval(() => {
+      i++;
+      audio.volume = Math.max(0, startVol * (1 - i / steps));
+      if (i >= steps) {
+        clearInterval(fadeInterval);
+        audio.pause();
+        audio.src = "";
+      }
+    }, PREVIEW_FADE_MS / steps);
+  }
+
+  function playPreview(song) {
+    if (!song || !song.url) return;
+    const audio = getPreviewAudio();
+    clearInterval(fadeInterval);
+    audio.pause();
+    audio.src = song.url;
+    audio.currentTime = PREVIEW_START;
+    audio.volume = 0.6;
+    audio.play().catch(() => {
+      // autoplay may be blocked until a user gesture; selecting a row
+      // via click already counts as a gesture in most browsers, so this
+      // is mainly a safety net.
+    });
+  }
 
   function init() {
     document.getElementById("back-to-menu").addEventListener("click", () => {
+      stopPreview();
       ScreenManager.show("menu");
     });
 
     document.getElementById("start-song-btn").addEventListener("click", () => {
       if (selectedSong) {
+        stopPreview();
         Game.start(selectedSong);
       }
     });
@@ -68,6 +115,7 @@ const LevelSelect = (function () {
     });
 
     updateLeftPanel(selectedSong);
+    playPreview(selectedSong);
   }
 
   function updateLeftPanel(song) {
@@ -115,5 +163,5 @@ const LevelSelect = (function () {
     return div.innerHTML;
   }
 
-  return { init, refresh };
+  return { init, refresh, stopPreview };
 })();
