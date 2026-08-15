@@ -536,8 +536,7 @@ let loseFlashUntil = 0;
     const size = 74;
 
     // Save-lunge: briefly nudge the sprite outward toward the last save's
-    // direction, but the base rotation always returns to the fixed
-    // 30° clockwise resting angle — it never orbits or reorients.
+    // direction while it faces the direction it's currently covering.
     let lungeScale = 1;
     if (performance.now() < saveFlashUntil) {
       const remaining = (saveFlashUntil - performance.now()) / (SAVE_FLASH_TIME * 1000);
@@ -547,8 +546,12 @@ let loseFlashUntil = 0;
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(lungeScale, lungeScale);
-    // Fixed resting rotation: 30° clockwise, always, regardless of position.
-    ctx.rotate((30 * Math.PI) / 180);
+    // Face outward toward wherever the keeper currently is on the ring —
+    // e.g. on the left side it looks left, at the bottom it looks down —
+    // instead of a fixed rotation. The sprite's art faces "up" (screen
+    // angle 270°) at 0° rotation, so offset by +90° to align it with
+    // keeper.angleDeg (0°=right, 90°=down, 180°=left, 270°=up).
+    ctx.rotate(((keeper.angleDeg + 90) * Math.PI) / 180);
     ctx.shadowColor = "rgba(255, 47, 143, 0.6)";
     ctx.shadowBlur = 12;
     ctx.drawImage(assets.goalkeeper, -size / 2, -size / 2, size, size);
