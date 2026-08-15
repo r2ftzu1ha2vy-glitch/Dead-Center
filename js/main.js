@@ -21,7 +21,7 @@ const ScreenManager = (function () {
     });
     current = name;
 
-    if (name === "menu") {
+    if (name === "menu" || name === "select") {
       menuAudio.play().catch(() => {
         // autoplay blocked until a user gesture happens — the unlock
         // listener below will start it as soon as the person interacts.
@@ -39,7 +39,7 @@ const ScreenManager = (function () {
   // Catch the first click/keydown/touch anywhere and, if we're still on
   // the menu, (re)start the menu music then.
   function unlockAudioOnce() {
-    if (current === "menu" && menuAudio.paused) {
+    if ((current === "menu" || current === "select") && menuAudio.paused) {
       menuAudio.play().catch(() => {});
     }
     window.removeEventListener("pointerdown", unlockAudioOnce);
