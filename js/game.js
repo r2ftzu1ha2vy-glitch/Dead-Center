@@ -121,12 +121,13 @@ const Game = (function () {
   }
 
   function resetState() {
+    const noteCount = chart.notes.length;
     notes = chart.notes.map((n, i) => ({
       id: i,
       type: n.type,
       targetTime: n.time,
       spawnTime: n.time - TRAVEL_TIME,
-      angle: pickSpawnAngle(n, i),
+      angle: pickSpawnAngle(n, i, noteCount),
       resolved: false,
       hit: false,
       curveOffset: 0,
@@ -141,7 +142,23 @@ const Game = (function () {
     keeper.targetAngleDeg = 200;
   }
 
-  function pickSpawnAngle(note, i) {
+  // Center angle (in degrees, standard canvas convention: 0=right, 90=down,
+  // 180=left, 270=up) for each cardinal direction a tutorial note can use.
+  const DIRECTION_ANGLES = { right: 0, down: 90, left: 180, up: 270 };
+  const DIRECTION_SPREAD = 35; // ± degrees randomized around the direction's center
+
+  function pickSpawnAngle(note, i, noteCount) {
+    if (song && song.isTutorial) {
+      // Tutorial notes are authored with a "direction" (left/right/up/down)
+      // in songs.js rather than a fixed angle, so the same direction never
+      // spawns from exactly the same spot twice — it's randomized within
+      // that direction's arc, keeping the ball's general approach
+      // predictable (easy to learn) while still feeling varied.
+      const dir = note.direction;
+      const center = DIRECTION_ANGLES.hasOwnProperty(dir) ? DIRECTION_ANGLES[dir] : 200;
+      const jitter = (Math.random() * 2 - 1) * DIRECTION_SPREAD;
+      return center + jitter;
+    }
     // Distribute spawn angles around the circle with variety influenced by type
     const base = (i * 137.5) % 360; // golden-angle distribution for even spread
     return base;
