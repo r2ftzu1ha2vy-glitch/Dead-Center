@@ -11,24 +11,74 @@ const SongLibrary = (function () {
   // ---- The ONLY manual step: list your songs here ----
   // Each entry can be either:
   //   - a plain filename string (assumed to live in /songs/), e.g. "Rush.mp3"
-  //   - an object { name, url } pointing to any direct mp3 link
+  //   - an object { name, url, cover?, chart? } pointing to any direct mp3 link
+  //     - cover: optional image URL, replaces the auto-generated cover
+  //     - chart: optional hand-authored { duration, notes } — skips auto-detection
   const SONG_SOURCES = [
     // "Rush.mp3",
     // "Eclipse.mp3",
     // "Midnight.mp3",
-    { name: "Tutorial", url: "https://raw.githubusercontent.com/NecroHub/Audio/main/YTDown.com_YouTube_Earth-Wind-_-Fire-September-Lyrics_Media_aqZxIL4YE2I_001_1080p.mp3", cover: "https://iili.io/CiRkehg.jpg" },
+    {
+      name: "Tutorial",
+      url: "https://raw.githubusercontent.com/NecroHub/Audio/main/YTDown.com_YouTube_Earth-Wind-_-Fire-September-Lyrics_Media_aqZxIL4YE2I_001_1080p.mp3",
+      cover: "https://iili.io/CiRkehg.jpg",
+      chart: {
+        duration: 70,
+        notes: [
+          { type: "normal", time: 20.0 },
+          { type: "normal", time: 21.0 },
+          { type: "normal", time: 22.0 },
+          { type: "normal", time: 23.0 },
+          { type: "normal", time: 24.0 },
+          { type: "normal", time: 25.0 },
+          { type: "normal", time: 26.0 },
+          { type: "normal", time: 27.0 },
+          { type: "normal", time: 28.0 },
+          { type: "normal", time: 29.0 },
+          { type: "normal", time: 30.0 },
+          { type: "normal", time: 31.0 },
+          { type: "normal", time: 32.0 },
+          { type: "normal", time: 36.5 },
+          { type: "normal", time: 37.5 },
+          { type: "normal", time: 38.5 },
+          { type: "normal", time: 39.5 },
+          { type: "normal", time: 40.5 },
+          { type: "normal", time: 41.5 },
+          { type: "normal", time: 42.5 },
+          { type: "normal", time: 43.5 },
+          { type: "normal", time: 44.5 },
+          { type: "normal", time: 45.5 },
+          { type: "normal", time: 46.5 },
+          { type: "normal", time: 47.5 },
+          { type: "normal", time: 48.5 },
+          { type: "normal", time: 53.0 },
+          { type: "normal", time: 53.5 },
+          { type: "normal", time: 54.0 },
+          { type: "normal", time: 54.5 },
+          { type: "normal", time: 55.0 },
+          { type: "normal", time: 55.5 },
+          { type: "normal", time: 56.0 },
+          { type: "normal", time: 56.5 },
+          { type: "normal", time: 57.0 },
+          { type: "normal", time: 57.5 },
+          { type: "normal", time: 58.0 },
+        ],
+      },
+    },
   ];
 
   // Tutorial-only text cues. Format mirrors the note chart: "[text]: [time]"
   // Shown at top-middle of the arena instead of spawning a ball.
   // Only active when the song's name is exactly "Tutorial".
   const TUTORIAL_TEXT_CUES = [
-    { text: "Move to intercept the ball", time: 1.000 },
-    { text: "Get close to the center", time: 4.500 },
-    { text: "Watch for curve shots", time: 9.000 },
-    { text: "Double balls need a wider stance", time: 14.000 },
-    { text: "Don't let it reach the Dead Zone", time: 19.000 },
-    { text: "You're ready. Good luck!", time: 24.000 },
+    { text: "Welcome To Dead Center", time: 1.000 },
+    { text: "Let's Start With The Basics", time: 2.000 },
+    { text: "move Your Cursor To Where The Ball Is", time: 3.000 },
+    { text: "To Hit The Ball Back", time: 5.000 },
+    { text: "Try Some On Beats", time: 18.500 },
+    { text: "Nice, Now Try Some Off Beats", time: 32.500 },
+    { text: "Excellent, Now Try Both!", time: 51.250 },
+    { text: "Fantastic! Thats All For The Tutorial!", time: 63.000 },
   ];
 
   const STORAGE_KEY = "deadcenter_progress_v1";
@@ -92,7 +142,6 @@ const SongLibrary = (function () {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
-    // diamond motif matching background theme
     ctx.save();
     ctx.translate(size / 2, size / 2);
     ctx.rotate(Math.PI / 4);
@@ -107,7 +156,6 @@ const SongLibrary = (function () {
     ctx.fillRect(-30, -30, 60, 60);
     ctx.restore();
 
-    // ring accent (echoes ring.png motif)
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size * 0.3, 0, Math.PI * 2);
     ctx.strokeStyle = `hsla(${hue1}, 100%, 75%, 0.35)`;
@@ -117,14 +165,15 @@ const SongLibrary = (function () {
     return c.toDataURL("image/png");
   }
 
-  // Normalize each entry into { id, filename, url, name }
-function resolveSource(source) {
+  // Normalize each entry into { filename, url, name, cover, chart }
+  function resolveSource(source) {
     if (typeof source === "string") {
       return {
         filename: source,
         url: `songs/${source}`,
         name: niceName(source),
         cover: null,
+        chart: null,
       };
     }
     return {
@@ -132,6 +181,7 @@ function resolveSource(source) {
       url: source.url,
       name: source.name,
       cover: source.cover || null,
+      chart: source.chart || null,
     };
   }
 
@@ -145,7 +195,7 @@ function resolveSource(source) {
       url: resolved.url,
       name: resolved.name,
       cover: resolved.cover || makeCoverDataUrl(resolved.name),
-      chart: null,
+      chart: resolved.chart || null, // if set, skips auto-generation
       isTutorial,
       textCues: isTutorial ? TUTORIAL_TEXT_CUES.slice() : null,
     };
