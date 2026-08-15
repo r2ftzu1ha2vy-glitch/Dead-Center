@@ -285,6 +285,15 @@ function finish(completed) {
   }
 
   function update(t) {
+    // End the level once the chart's authored duration is reached, rather
+    // than relying solely on audio.onended — the underlying mp3 file can
+    // run longer than the chart, which would otherwise leave the player
+    // stuck in the level with nothing left to do.
+    if (running && chart && chart.duration && t >= chart.duration) {
+      finish(true);
+      return;
+    }
+
     // smooth keeper angle toward target (shortest path)
     let diff = shortestAngleDiff(keeper.angleDeg, keeper.targetAngleDeg);
     keeper.angleDeg += diff * 0.28;
