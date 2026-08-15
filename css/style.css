@@ -509,6 +509,35 @@ img {
 
 .countdown.hidden { display: none; }
 
+/* Tutorial text cue — top middle, mirrors note timing */
+.tutorial-cue {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--white);
+  text-align: center;
+  text-shadow: 0 4px 20px rgba(255, 47, 143, 0.6);
+  background: rgba(20, 8, 28, 0.55);
+  border: 1px solid var(--line);
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 7;
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+  max-width: 80%;
+}
+
+.tutorial-cue.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .game-overlay {
   position: absolute;
   inset: 0;
