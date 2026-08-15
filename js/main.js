@@ -23,7 +23,8 @@ const ScreenManager = (function () {
 
     if (name === "menu") {
       menuAudio.play().catch(() => {
-        // autoplay may be blocked until first user interaction; will retry on next show()
+        // autoplay blocked until a user gesture happens — the unlock
+        // listener below will start it as soon as the person interacts.
       });
     } else {
       menuAudio.pause();
@@ -33,6 +34,19 @@ const ScreenManager = (function () {
       LevelSelect.refresh();
     }
   }
+
+  // Browsers block audio.play() before any user gesture on the page.
+  // Catch the first click/keydown/touch anywhere and, if we're still on
+  // the menu, (re)start the menu music then.
+  function unlockAudioOnce() {
+    if (current === "menu" && menuAudio.paused) {
+      menuAudio.play().catch(() => {});
+    }
+    window.removeEventListener("pointerdown", unlockAudioOnce);
+    window.removeEventListener("keydown", unlockAudioOnce);
+  }
+  window.addEventListener("pointerdown", unlockAudioOnce);
+  window.addEventListener("keydown", unlockAudioOnce);
 
   function getCurrent() {
     return current;
