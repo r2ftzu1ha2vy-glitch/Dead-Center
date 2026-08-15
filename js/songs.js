@@ -72,9 +72,12 @@ const SongLibrary = (function () {
   // Only active when the song's name is exactly "Tutorial".
   const TUTORIAL_TEXT_CUES = [
     { text: "Welcome To Dead Center", time: 1.000 },
-    { text: "Let's Start With The Basics", time: 2.000 },
-    { text: "move Your Cursor To Where The Ball Is", time: 3.000 },
-    { text: "To Hit The Ball Back", time: 5.000 },
+    { text: "Let's Start With The Basics", time: 3.000 },
+    { text: "move Your Cursor To Where The Ball Is", time: 5.000 },
+    { text: "To Hit The Ball Back", time: 7.000 },
+    { text: "Balls May Charge In Any Direction", time: 10.000 },
+    { text: "So Be Ready!", time: 12.000 },
+    { text: "Are You Ready For The Fun?", time: 15.000 },
     { text: "Try Some On Beats", time: 18.500 },
     { text: "Nice, Now Try Some Off Beats", time: 32.500 },
     { text: "Excellent, Now Try Both!", time: 51.250 },
